@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function CardList() {
   const [products, setProducts] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
     const storedProducts = JSON.parse(localStorage.getItem("products")) || [];
@@ -29,6 +32,9 @@ export default function CardList() {
         <motion.div
           key={index}
           whileHover={{ scale: 1.05, y: -5 }}
+          onClick={() =>
+            router.push(`/products/${encodeURIComponent(product.name)}`)
+          }
           className="bg-white dark:bg-gray-950 rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800 transition-all duration-300"
         >
           <div className="relative w-full h-60">
@@ -39,8 +45,14 @@ export default function CardList() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-                تصویر محصول
+              <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                <Image
+                  src="/no-image.jpg"
+                  alt={product.name || "محصول"}
+                  width={720}
+                  height={1080}
+                  className="w-48 h-48 object-cover rounded-xl shadow-md border"
+                />
               </div>
             )}
           </div>
