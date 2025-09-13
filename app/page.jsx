@@ -1,4 +1,5 @@
-// app/page.jsx
+
+import CardList from "@/components/CardList";
 import Link from "next/link";
 
 export default function Home() {
@@ -11,6 +12,8 @@ export default function Home() {
       >
         افزودن محصول
       </Link>
+
+      <CardList />
     </main>
   );
 }
