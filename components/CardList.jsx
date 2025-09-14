@@ -39,13 +39,17 @@ export default function CardList() {
 
   // Sort & Filter
   useEffect(() => {
+    // Copy Array
     let result = [...products];
 
+    // Search
     if (query) {
       result = result.filter((p) =>
         p.name.toLowerCase().includes(query.toLowerCase())
       );
     }
+
+    // Filter
     if (filters.category) {
       result = result.filter((p) => p.category === filters.category);
     }
@@ -56,6 +60,7 @@ export default function CardList() {
       result = result.filter((p) => p.price <= Number(filters.maxPrice));
     }
 
+    // Sort
     if (sortBy === "name") {
       result.sort((a, b) => a.name.localeCompare(b.name, "fa"));
     } else if (sortBy === "price") {
@@ -64,8 +69,11 @@ export default function CardList() {
       result.sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
+    // Update State
     setFilteredProducts(result);
     setCurrentPage(1);
+
+    // Each Time Change Happen UseEffect Update
   }, [query, filters, products, sortBy]);
 
   // Get Items from localStorage
@@ -74,6 +82,7 @@ export default function CardList() {
     setProducts(storedProducts);
   }, []);
 
+  // Update URL
   useEffect(() => {
     const params = new URLSearchParams();
     if (query) params.set("search", query);
@@ -85,7 +94,7 @@ export default function CardList() {
     router.replace(`/?${params.toString()}`);
   }, [query, filters, currentPage, router]);
 
-  // محاسبه آیتم‌های صفحه فعلی
+  // محاسبه آیتم‌های صفحه فعلی ==> Pagination
   useEffect(() => {
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
@@ -98,7 +107,9 @@ export default function CardList() {
   const handleSearch = (value) => setQuery(value);
   const handleFilter = (newFilters) => setFilters(newFilters);
 
+  // تبدیل به آرایه
   const categories = Array.from(
+    // حذف تکراری ها 
     new Set(products.map((p) => p.category).filter(Boolean))
   );
 

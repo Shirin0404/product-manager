@@ -11,6 +11,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
 
+  // Encode Space
   const productName = decodeURIComponent(pathname.split("/").pop());
 
   useEffect(() => {

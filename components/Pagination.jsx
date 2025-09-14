@@ -9,6 +9,7 @@ export default function Pagination({
   onPageChange,
   itemsPerPage,
 }) {
+  // گرد میکنه به بالا
   const totalPages = Math.ceil(items.length / itemsPerPage);
 
   const handlePageClick = (page) => {

@@ -9,6 +9,7 @@ export default function SearchBar({ onSearch, placeholder = "جستجو..." }) {
   const handleChange = (e) => {
     const value = e.target.value;
     setQuery(value);
+    // If OnSearch Exists get the value 
     if (onSearch) onSearch(value);
   };
 

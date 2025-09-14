@@ -14,6 +14,7 @@ import Swal from "sweetalert2";
 import { useRef } from "react";
 
 export default function ProductForm() {
+  // مقادیر را نکه میداره ، آپدیت فرم ، مقدار فرم را به خالی برمیگردونه
   const { formData, setField, resetForm } = useProductStore();
 
   // Input Focous
