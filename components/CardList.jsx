@@ -1,23 +1,68 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import SearchBar from "@/components/Search";
 import Pagination from "@/components/Pagination";
+import Image from "next/image";
 
 export default function CardList() {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentItems, setCurrentItems] = useState([]);
+
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const debounceTimeout = useRef(null);
+
+  const initialQuery = searchParams.get("search") || "";
+  const initialPage = parseInt(searchParams.get("page")) || 1;
+  const [query, setQuery] = useState(initialQuery);
+  const [currentPage, setCurrentPage] = useState(initialPage);
+
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const storedProducts = JSON.parse(localStorage.getItem("products")) || [];
     setProducts(storedProducts);
-  }, []);
 
-  const formatPrice = (price) => {
-    return price ? new Intl.NumberFormat("fa-IR").format(price) : "";
+    const filtered = initialQuery
+      ? storedProducts.filter((product) =>
+          product.name.toLowerCase().includes(initialQuery.toLowerCase())
+        )
+      : storedProducts;
+
+    setFilteredProducts(filtered);
+  }, [initialQuery]);
+
+  useEffect(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    setCurrentItems(filteredProducts.slice(start, end));
+  }, [filteredProducts, currentPage]);
+
+  const formatPrice = (price) =>
+    price ? new Intl.NumberFormat("fa-IR").format(price) : "";
+
+  const handleSearch = (value) => {
+    setQuery(value);
+
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+
+    debounceTimeout.current = setTimeout(() => {
+      const filtered = products.filter((product) =>
+        product.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+      setCurrentPage(1);
+
+      const params = new URLSearchParams(window.location.search);
+      if (value) params.set("search", value);
+      else params.delete("search");
+      params.set("page", "1");
+      router.replace(`?${params.toString()}`, { scroll: false });
+    }, 300);
   };
 
   if (products.length === 0) {
@@ -30,6 +75,11 @@ export default function CardList() {
 
   return (
     <div className="p-6">
+      <SearchBar
+        onSearch={handleSearch}
+        placeholder="جستجو بر اساس نام محصول"
+      />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
         {currentItems.map((product, index) => (
           <motion.div
@@ -38,7 +88,7 @@ export default function CardList() {
             onClick={() =>
               router.push(`/products/${encodeURIComponent(product.name)}`)
             }
-            className="bg-white dark:bg-gray-950 rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800 transition-all duration-300"
+            className="cursor-pointer bg-white dark:bg-gray-950 rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800 transition-all duration-300"
           >
             <div className="relative w-full h-60">
               {product.imageUrl ? (
@@ -66,9 +116,7 @@ export default function CardList() {
               </h3>
 
               <p className="text-green-600 font-semibold text-lg">
-                {product.price
-                  ? `${formatPrice(product.price)} تومان`
-                  : "قیمت"}
+                {product.price ? `${formatPrice(product.price)} تومان` : "قیمت"}
               </p>
 
               <p className="text-blue-500 font-medium">
@@ -90,7 +138,19 @@ export default function CardList() {
         ))}
       </div>
 
-      <Pagination items={products} onPageChange={setCurrentItems} />
+      <Pagination
+        items={filteredProducts}
+        currentPage={currentPage}
+        onPageChange={(page) => {
+          setCurrentPage(page);
+
+          //  Upadte Url For Pagination
+          const params = new URLSearchParams(window.location.search);
+          params.set("page", page.toString());
+          router.replace(`?${params.toString()}`, { scroll: false });
+        }}
+        itemsPerPage={itemsPerPage}
+      />
     </div>
   );
 }

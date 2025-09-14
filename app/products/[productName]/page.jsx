@@ -39,11 +39,21 @@ export default function ProductDetailPage() {
       <h1 className="text-3xl font-bold mb-6">{product.name}</h1>
 
       <div className="w-full max-w-3xl bg-white dark:bg-gray-950 rounded-3xl shadow-2xl p-6 flex flex-col md:flex-row gap-6">
-        <img
-          src={product.imageUrl}
-          alt={product.name}
-          className="w-full md:w-1/2 h-80 object-cover rounded-2xl"
-        />
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.name || "محصول"}
+            className="w-full md:w-1/2 h-80 object-cover rounded-2xl"
+          />
+        ) : (
+          <div className="w-full md:w-1/2 h-80 flex items-center justify-center  rounded-2xl">
+            <img
+              src="/no-image.jpg"
+              alt="No Image"
+              className="w-full md:w-1/2 h-80 object-cover rounded-2xl"
+            />
+          </div>
+        )}
 
         <div className="flex-1 flex flex-col gap-4">
           <p className="text-green-600 text-2xl font-bold">
