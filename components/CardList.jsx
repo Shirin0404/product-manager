@@ -7,6 +7,14 @@ import SearchBar from "@/components/Search";
 import Pagination from "@/components/Pagination";
 import ProductFilter from "@/components/Filter";
 import Image from "next/image";
+import SortDropdown from "@/components/SortDropdown";
+import { SearchX } from "lucide-react";
+
+const sortOptions = [
+  { value: "name", label: "نام" },
+  { value: "price", label: "قیمت" },
+  { value: "date", label: "تاریخ" },
+];
 
 export default function CardList() {
   const router = useRouter();
@@ -15,6 +23,7 @@ export default function CardList() {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentItems, setCurrentItems] = useState([]);
+  const [sortBy, setSortBy] = useState("");
 
   const itemsPerPage = 10;
 
@@ -28,23 +37,7 @@ export default function CardList() {
     maxPrice: searchParams.get("maxPrice") || "",
   });
 
-  //Save in localStorage
-  useEffect(() => {
-    const storedProducts = JSON.parse(localStorage.getItem("products")) || [];
-    setProducts(storedProducts);
-  }, []);
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (query) params.set("search", query);
-    if (filters.category) params.set("category", filters.category);
-    if (filters.minPrice) params.set("minPrice", filters.minPrice);
-    if (filters.maxPrice) params.set("maxPrice", filters.maxPrice);
-    if (currentPage > 1) params.set("page", currentPage);
-
-    router.replace(`/?${params.toString()}`);
-  }, [query, filters, currentPage, router]);
-
+  // Sort & Filter
   useEffect(() => {
     let result = [...products];
 
@@ -63,11 +56,36 @@ export default function CardList() {
       result = result.filter((p) => p.price <= Number(filters.maxPrice));
     }
 
+    if (sortBy === "name") {
+      result.sort((a, b) => a.name.localeCompare(b.name, "fa"));
+    } else if (sortBy === "price") {
+      result.sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (sortBy === "date") {
+      result.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
     setFilteredProducts(result);
     setCurrentPage(1);
-  }, [query, filters, products]);
+  }, [query, filters, products, sortBy]);
 
- 
+  // Get Items from localStorage
+  useEffect(() => {
+    const storedProducts = JSON.parse(localStorage.getItem("products")) || [];
+    setProducts(storedProducts);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (query) params.set("search", query);
+    if (filters.category) params.set("category", filters.category);
+    if (filters.minPrice) params.set("minPrice", filters.minPrice);
+    if (filters.maxPrice) params.set("maxPrice", filters.maxPrice);
+    if (currentPage > 1) params.set("page", currentPage);
+
+    router.replace(`/?${params.toString()}`);
+  }, [query, filters, currentPage, router]);
+
+  // محاسبه آیتم‌های صفحه فعلی
   useEffect(() => {
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
@@ -99,6 +117,11 @@ export default function CardList() {
         placeholder="جستجو بر اساس نام محصول"
         initialValue={query}
       />
+      <SortDropdown
+        options={sortOptions}
+        initial=""
+        onChange={(value) => setSortBy(value)}
+      />
 
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-52">
@@ -110,63 +133,80 @@ export default function CardList() {
         </div>
 
         <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {currentItems.map((product, index) => (
+          {currentItems.length === 0 ? (
             <motion.div
-              key={index}
-              whileHover={{ scale: 1.05, y: -5 }}
-              onClick={() =>
-                router.push(`/products/${encodeURIComponent(product.name)}`)
-              }
-              className="cursor-pointer bg-white dark:bg-gray-950 rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800 transition-all duration-300"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="col-span-full flex flex-col items-center justify-center py-16 text-center"
             >
-              <div className="relative w-full h-60">
-                {product.imageUrl ? (
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                    <Image
-                      src="/no-image.jpg"
-                      alt={product.name || "محصول"}
-                      width={720}
-                      height={1080}
-                      className="w-48 h-48 object-cover rounded-xl shadow-md border"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="p-5 flex flex-col gap-2">
-                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 truncate">
-                  {product.name || "نام محصول"}
-                </h3>
-
-                <p className="text-green-600 font-semibold text-lg">
-                  {product.price
-                    ? `${formatPrice(product.price)} تومان`
-                    : "قیمت"}
-                </p>
-
-                <p className="text-blue-500 font-medium">
-                  {product.category || "دسته‌بندی"}
-                </p>
-
-                <p className="text-gray-600 dark:text-gray-300 line-clamp-3">
-                  {product.description ||
-                    "توضیحات محصول اینجا نمایش داده می‌شود."}
-                </p>
-              </div>
-
-              <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex justify-center gap-3">
-                <button className="px-4 py-2 bg-[#bbdce5] text-[#ab886d] rounded-xl shadow-lg cursor-pointer hover:bg-[#bbdce5] transition w-4/5">
-                  جزئیات
-                </button>
-              </div>
+              <SearchX className="w-16 h-16 text-red-400 mb-4 animate-bounce" />
+              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                نتیجه‌ای یافت نشد
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400 mt-2">
+                هیچ محصولی با جستجو یا فیلتر انتخابی شما مطابقت ندارد.
+              </p>
             </motion.div>
-          ))}
+          ) : (
+            currentItems.map((product, index) => (
+              <motion.div
+                key={index}
+                whileHover={{ scale: 1.05, y: -5 }}
+                onClick={() =>
+                  router.push(`/products/${encodeURIComponent(product.name)}`)
+                }
+                className="cursor-pointer bg-white dark:bg-gray-950 rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800 transition-all duration-300"
+              >
+                <div className="relative w-full h-60">
+                  {product.imageUrl ? (
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                      <Image
+                        src="/no-image.jpg"
+                        alt={product.name || "محصول"}
+                        width={720}
+                        height={1080}
+                        className="w-48 h-48 object-cover rounded-xl shadow-md border"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-5 flex flex-col gap-2">
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 truncate">
+                    {product.name || "نام محصول"}
+                  </h3>
+
+                  <p className="text-green-600 font-semibold text-lg">
+                    {product.price
+                      ? `${formatPrice(product.price)} تومان`
+                      : "قیمت"}
+                  </p>
+
+                  <p className="text-blue-500 font-medium">
+                    {product.category || "دسته‌بندی"}
+                  </p>
+
+                  <p className="text-gray-600 dark:text-gray-300 line-clamp-3">
+                    {product.description ||
+                      "توضیحات محصول اینجا نمایش داده می‌شود."}
+                  </p>
+                </div>
+
+                <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex justify-center gap-3">
+                  <button className="px-4 py-2 bg-[#bbdce5] text-[#ab886d] rounded-xl shadow-lg cursor-pointer hover:bg-[#bbdce5] transition w-4/5">
+                    جزئیات
+                  </button>
+                </div>
+              </motion.div>
+            ))
+          )}
         </div>
       </div>
 
