@@ -17,10 +17,10 @@ export default function ProductDetailPage() {
     setLoading(true);
     const timeout = setTimeout(() => {
       const storedProducts = JSON.parse(localStorage.getItem("products")) || [];
-      const foundProduct = storedProducts.find(p => p.name === productName);
+      const foundProduct = storedProducts.find((p) => p.name === productName);
       setProduct(foundProduct || null);
       setLoading(false);
-    }, 600); 
+    }, 600);
     return () => clearTimeout(timeout);
   }, [productName]);
 
@@ -39,11 +39,9 @@ export default function ProductDetailPage() {
       <h1 className="text-3xl font-bold mb-6">{product.name}</h1>
 
       <div className="w-full max-w-3xl bg-white dark:bg-gray-950 rounded-3xl shadow-2xl p-6 flex flex-col md:flex-row gap-6">
-        <Image
+        <img
           src={product.imageUrl}
           alt={product.name}
-          width={540}
-          height={720}
           className="w-full md:w-1/2 h-80 object-cover rounded-2xl"
         />
 
@@ -52,7 +50,9 @@ export default function ProductDetailPage() {
             {product.price?.toLocaleString("fa-IR")} تومان
           </p>
           <p className="text-blue-500 font-medium">{product.category}</p>
-          <p className="text-gray-700 dark:text-gray-300">{product.description}</p>
+          <p className="text-gray-700 dark:text-gray-300">
+            {product.description}
+          </p>
         </div>
       </div>
     </div>

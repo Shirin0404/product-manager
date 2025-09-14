@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Pagination from "@/components/Pagination";
 
 export default function CardList() {
   const [products, setProducts] = useState([]);
+  const [currentItems, setCurrentItems] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -27,61 +29,68 @@ export default function CardList() {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
-      {products.map((product, index) => (
-        <motion.div
-          key={index}
-          whileHover={{ scale: 1.05, y: -5 }}
-          onClick={() =>
-            router.push(`/products/${encodeURIComponent(product.name)}`)
-          }
-          className="bg-white dark:bg-gray-950 rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800 transition-all duration-300"
-        >
-          <div className="relative w-full h-60">
-            {product.imageUrl ? (
-              <img
-                src={product.imageUrl}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                <Image
-                  src="/no-image.jpg"
-                  alt={product.name || "محصول"}
-                  width={720}
-                  height={1080}
-                  className="w-48 h-48 object-cover rounded-xl shadow-md border"
+    <div className="p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+        {currentItems.map((product, index) => (
+          <motion.div
+            key={index}
+            whileHover={{ scale: 1.05, y: -5 }}
+            onClick={() =>
+              router.push(`/products/${encodeURIComponent(product.name)}`)
+            }
+            className="bg-white dark:bg-gray-950 rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800 transition-all duration-300"
+          >
+            <div className="relative w-full h-60">
+              {product.imageUrl ? (
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
                 />
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                  <Image
+                    src="/no-image.jpg"
+                    alt={product.name || "محصول"}
+                    width={720}
+                    height={1080}
+                    className="w-48 h-48 object-cover rounded-xl shadow-md border"
+                  />
+                </div>
+              )}
+            </div>
 
-          <div className="p-5 flex flex-col gap-2">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 truncate">
-              {product.name || "نام محصول"}
-            </h3>
+            <div className="p-5 flex flex-col gap-2">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 truncate">
+                {product.name || "نام محصول"}
+              </h3>
 
-            <p className="text-green-600 font-semibold text-lg">
-              {product.price ? `${formatPrice(product.price)} تومان` : "قیمت"}
-            </p>
+              <p className="text-green-600 font-semibold text-lg">
+                {product.price
+                  ? `${formatPrice(product.price)} تومان`
+                  : "قیمت"}
+              </p>
 
-            <p className="text-blue-500 font-medium">
-              {product.category || "دسته‌بندی"}
-            </p>
+              <p className="text-blue-500 font-medium">
+                {product.category || "دسته‌بندی"}
+              </p>
 
-            <p className="text-gray-600 dark:text-gray-300 line-clamp-3">
-              {product.description || "توضیحات محصول اینجا نمایش داده می‌شود."}
-            </p>
-          </div>
+              <p className="text-gray-600 dark:text-gray-300 line-clamp-3">
+                {product.description ||
+                  "توضیحات محصول اینجا نمایش داده می‌شود."}
+              </p>
+            </div>
 
-          <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex justify-center gap-3">
-            <button className="px-4 py-2 bg-[#bbdce5] text-[#ab886d] rounded-xl shadow-lg cursor-pointer hover:bg-[#bbdce5] transition w-4/5">
-              جزئیات
-            </button>
-          </div>
-        </motion.div>
-      ))}
+            <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex justify-center gap-3">
+              <button className="px-4 py-2 bg-[#bbdce5] text-[#ab886d] rounded-xl shadow-lg cursor-pointer hover:bg-[#bbdce5] transition w-4/5">
+                جزئیات
+              </button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <Pagination items={products} onPageChange={setCurrentItems} />
     </div>
   );
 }

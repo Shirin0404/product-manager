@@ -39,15 +39,17 @@ export default function ProductForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const requiredFields = [
-      "نام محصول",
-      "قیمت محصول",
-      "دسته بندی محصول",
-      "توضیحات محصول",
-      "آدرس عکس محصول",
-    ];
-    const missingFields = requiredFields.filter(
-      (field) => !formData[field] || formData[field].toString().trim() === ""
+    const fieldLabels = {
+      name: "نام محصول",
+      price: "قیمت محصول",
+      category: "دسته بندی محصول",
+      description: "توضیحات محصول",
+      imageUrl: "آدرس عکس محصول",
+    };
+
+    // Empty Feilds
+    const missingFields = Object.keys(fieldLabels).filter(
+      (key) => !formData[key] || formData[key].toString().trim() === ""
     );
 
     // Alert for empty feilds
@@ -55,7 +57,9 @@ export default function ProductForm() {
       Swal.fire({
         icon: "error",
         title: "خطا",
-        html: `لطفاً فیلدهای زیر را پر کنید:<br>${missingFields.join(", ")}`,
+        html: `لطفاً فیلدهای زیر را پر کنید:<br>${missingFields
+          .map((key) => fieldLabels[key])
+          .join(", ")}`,
         didClose: () => {
           //  Focous On First Empty Feield
           const firstMissing = missingFields[0];
@@ -65,7 +69,7 @@ export default function ProductForm() {
       return;
     }
 
-    // Save in LocalStorge
+    // Save in LocalStorage
     const existing = JSON.parse(localStorage.getItem("products")) || [];
     localStorage.setItem("products", JSON.stringify([...existing, formData]));
 
